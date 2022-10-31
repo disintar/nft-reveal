@@ -1,0 +1,295 @@
+#pragma version >=0.2.0;
+
+#include "utils/collection-data.func";
+#include "utils/constants.func";
+#include "utils/text.func";
+
+
+int __test_get_collection_data_deploy() {
+	var ( gas_before, stack ) = invoke_method( get_collection_data, [] );
+
+	int idx_next       = stack.first();
+	int forward_amount = one_ton / 10;
+	int query_id       = rand( 1337 ) + 1;
+	cell coll_content  = stack.second();
+	slice owner        = stack.third();
+
+	cell nft_content   = begin_cell().store_slice("my_nft.json").end_cell();
+	cell nft_init      = begin_cell().store_slice(owner).store_ref(nft_content).end_cell();
+
+	builder msg_body   = generate_nft_deploy_request( idx_next, nft_init, query_id, forward_amount);
+	cell msg           = generate_internal_message_custom(0, 0, 0, msg_body, owner, null(), 0);
+	
+	var ( gas_deploy, _ )    = invoke_method(recv_internal, [one_ton, one_ton, msg, msg_body.end_cell().begin_parse()]);
+	var ( gas_after, stack ) = invoke_method( get_collection_data, [] );
+	;;Index should increase by one
+	throw_unless( 500, stack.first() == idx_next + 1 );
+
+	;; Nothing should change here
+	throw_unless( 501, equal_slices( coll_content.begin_parse(), stack.second().begin_parse() ) );
+	throw_unless( 502, equal_slices( owner, stack.third() ) );
+
+	return gas_before + gas_after + gas_deploy;
+}
+
+int __test_get_collection_data_change_owner() {
+
+	var ( gas_before, stack ) = invoke_method( get_collection_data, [] );
+
+	int query_id       = rand( 1337 ) + 1;
+	int change_owner   = 3; ;;WARNING contract dependent value.
+	slice owner        = stack.third();
+	slice new_owner    = generate_internal_address_with_custom_data(0, 0, random());
+	builder msg_body   = generate_internal_message_body( change_owner, query_id ).store_slice( new_owner );
+	cell    msg        = generate_internal_message_custom( 0, 0, 0, msg_body, owner, null(), 0 );
+
+	var ( gas_change, _ )    = invoke_method( recv_internal, [one_ton, one_ton, msg, msg_body.end_cell().begin_parse()] );
+	var ( gas_after, stack ) = invoke_method( get_collection_data, [] );
+
+	throw_unless( 500, equal_slices( new_owner, stack.third() ) );
+
+	return gas_before + gas_change + gas_after;
+}
+
+int __test_get_nft_address_by_index() {
+
+    slice owner = get_owner();
+
+    ;; To test that nft address is correct
+    ;; we have to deploy one first and capture it's address
+    ;; Index:0
+
+    cell nft_content = begin_cell().store_slice("my_nft.json").end_cell();
+    cell nft_init    = begin_cell().store_slice(owner).store_ref(nft_content).end_cell();
+
+    int query_id = rand(1337) + 1;
+    int forward_amount = one_ton / 10;
+    int deploy_idx = 0;
+
+    builder msg_body = generate_nft_deploy_request(deploy_idx, nft_init, query_id, forward_amount);
+    cell msg = generate_internal_message_custom(0, 0, 0, msg_body, owner, null(), 0);
+
+    (int gas_used, _) = invoke_method(recv_internal, [one_ton, 0, msg, msg_body.end_cell().begin_parse()]);
+    ;; Should successfully deploy and produce singe deployment message
+
+    tuple actions = parse_c5();
+    throw_unless(500, actions.tuple_length() == 1);
+
+    (int action_type, cell body, int mode) = actions.at(0).untriple();
+    throw_unless(501, action_type == 0);
+
+    tuple parsed_msg = unsafe_tuple(parse_internal_message(body));
+
+    ;;Picking nft address from deployment message
+    slice nft_address = parsed_msg.at(4);
+
+    var (gas_used2, stack) = invoke_method(get_nft_address_by_index, [deploy_idx]);
+
+    throw_unless(502, stack.tuple_length() == 1);
+
+    throw_unless(503, equal_slices(nft_address, stack.first()));
+
+
+    return gas_used;
+}
+
+slice generate_content(slice value) inline {
+    return begin_cell()
+            .store_uint(0, 1) ;; Either
+            .store_slice(value)
+            .end_cell()
+            .begin_parse();
+}
+
+
+int __test_reveal_add(){
+    var (owner_address, next_item_index, content, nft_item_code, royalty_params) = load_test_data();
+
+    int query_id = random_query_id();
+
+    cell reveal_dict = null();
+
+    reveal_dict~udict_add?(64, 0, generate_content("new_nft_json1.json"));
+    reveal_dict~udict_add?(64, 1, generate_content("new_nft_json2.json"));
+    reveal_dict~udict_add?(64, 2, generate_content("new_nft_json3.json"));
+    reveal_dict~udict_add?(64, 3, generate_content("new_nft_json4.json"));
+
+    builder msg_body = begin_cell()
+            .store_uint(op_collection_add_reveal_batch, 32)
+            .store_uint(query_id, 64)
+            .store_ref(reveal_dict);
+
+    cell msg = generate_internal_message_custom(0, 0, 0, msg_body, owner_address, null(), 0);
+
+    ~strdump("Send batch items to reveal!");
+    (int gas_success_internal, _) = invoke_method(recv_internal, [one_ton, 0, msg, msg_body.end_cell().begin_parse()]);
+
+    ~strdump("Get result!");
+    (_, var stack) = invoke_method(get_reveal_data, []);
+
+    int total_count = stack.first();
+
+    ~strdump_int("Total count: ", total_count);
+    throw_unless(520, total_count == 4);
+
+    ~strdump("Get reveal dict:");
+    ;; Check reveal batch exact same
+    cell reveal_batch = stack.second();
+    ~dump(reveal_batch);
+
+    do {
+        var (item_index, item, f?) = reveal_batch~udict::delete_get_min(64);
+
+        if (f?) {
+            slice dump_str = begin_cell()
+                .store_slice("[")
+                .store_uint(item_index + 48, 8)
+                .store_slice("] In reveal batch: ")
+                .store_slice(item).end_cell()
+                .begin_parse();
+            ~strdump(dump_str);
+            var (item_saved, s?) = reveal_dict.udict_get?(64, item_index);
+
+            throw_unless(550 + item_index, item_saved~load_uint(1) == 0);
+            throw_unless(500 + item_index, equal_slices(item_saved, item));
+        }
+    } until (~ f?);
+
+    return gas_success_internal;
+}
+
+
+() validate_collection_success_reveal_message(cell msg, slice nft_address, int op, int query_id, int expect_success) impure inline {
+    slice cs = msg.begin_parse();
+    cs~load_uint(6);
+    slice address_in_msg = cs~load_msg_addr();
+    throw_unless(600, equal_slices(address_in_msg, nft_address));
+    cs~load_coins();
+    cs~load_uint(107);
+
+    int op_in_msg = cs~load_uint(32);
+    int query_id_in_msg = cs~load_uint(64);
+
+    throw_unless(601, query_id == query_id_in_msg);
+    throw_unless(602, op == op_in_msg);
+
+    if (expect_success == 1){
+        int success = cs~load_uint(1);
+        throw_unless(603, success == 1);
+        cs~load_uint(2); ;; skip maybe and either
+        ~strdump_slice("Revealed: ", cs);
+    } elseif (expect_success == 0) {
+        int success = cs~load_uint(1);
+        throw_unless(604, success == 0);
+        ~strdump("Success out of items");
+    }
+
+}
+
+int __test_reveal_execute(){
+    var (owner_address, next_item_index, content, nft_item_code, royalty_params) = load_test_data();
+
+    ;;
+    ;; Load data for reveal
+    ;;
+    cell reveal_dict = null();
+
+    reveal_dict~udict_add?(64, 0, generate_content("new_nft_json1.json"));
+    reveal_dict~udict_add?(64, 1, generate_content("new_nft_json2.json"));
+    reveal_dict~udict_add?(64, 2, generate_content("new_nft_json3.json"));
+
+    builder msg_body = begin_cell()
+            .store_uint(op_collection_add_reveal_batch, 32)
+            .store_uint(random_query_id(), 64)
+            .store_ref(reveal_dict);
+
+    cell msg = generate_internal_message_custom(0, 0, 0, msg_body, owner_address, null(), 0);
+    (_, _) = invoke_method(recv_internal, [one_ton, 0, msg, msg_body.end_cell().begin_parse()]);
+
+    ;;
+    ;; Send message from nft to collection
+    ;;
+
+    var (_, stack) = invoke_method(get_nft_address_by_index, [1]);
+    slice nft_address = stack.first();
+    slice rand_addr = generate_internal_address_with_custom_data(0, 0, random());
+    int query_id = rand(10);
+
+    builder msg_body = begin_cell()
+            .store_uint(op_nft_reveal_nft_request, 32)
+            .store_uint(query_id, 64)
+            .store_uint(1, 256);
+
+    ;; request with random address - need to fail
+    cell msg = generate_internal_message_custom(0, 0, 0, msg_body, rand_addr, null(), 0);
+    int gas = invoke_method_expect_fail(recv_internal, [one_ton, 0, msg, msg_body.end_cell().begin_parse()]);
+    assert_no_actions();
+
+    ;; Ask as nft
+    cell msg = generate_internal_message_custom(0, 0, 0, msg_body, nft_address, null(), 0);
+    var (gas_success_internal1, _) = invoke_method(recv_internal, [one_ton, 0, msg, msg_body.end_cell().begin_parse()]);
+    ;; Get answer
+    tuple actions = parse_c5();
+    throw_unless(500, actions.tuple_length() == 1);
+
+    (int action_type, cell body, int mode) = actions.at(0).untriple();
+    throw_unless(501, action_type == 0);
+
+    validate_collection_success_reveal_message(body, nft_address, op_nft_reveal_success_collection_response, query_id, 1);
+
+    ;; Ask as nft #2
+    cell msg = generate_internal_message_custom(0, 0, 0, msg_body, nft_address, null(), 0);
+    var (gas_success_internal2, _) = invoke_method(recv_internal, [one_ton, 0, msg, msg_body.end_cell().begin_parse()]);
+    ;; Get answer
+    tuple actions = parse_c5();
+    throw_unless(500, actions.tuple_length() == 1);
+
+    (int action_type, cell body, int mode) = actions.at(0).untriple();
+    throw_unless(501, action_type == 0);
+
+    validate_collection_success_reveal_message(body, nft_address, op_nft_reveal_success_collection_response, query_id, 1);
+
+
+
+    ;; Ask as nft #3
+    cell msg = generate_internal_message_custom(0, 0, 0, msg_body, nft_address, null(), 0);
+    var (gas_success_internal3, _) = invoke_method(recv_internal, [one_ton, 0, msg, msg_body.end_cell().begin_parse()]);
+
+    ;; Get answer
+    tuple actions = parse_c5();
+    throw_unless(500, actions.tuple_length() == 1);
+
+    (int action_type, cell body, int mode) = actions.at(0).untriple();
+    throw_unless(501, action_type == 0);
+    validate_collection_success_reveal_message(body, nft_address, op_nft_reveal_success_collection_response, query_id, 1);
+
+    ;; Out of items
+    cell msg = generate_internal_message_custom(0, 0, 0, msg_body, nft_address, null(), 0);
+    var (gas_used, return_values) = invoke_method(recv_internal,  [one_ton, 0, msg, msg_body.end_cell().begin_parse()]);
+
+    ;; Get answer
+    tuple actions = parse_c5();
+    throw_unless(500, actions.tuple_length() == 1);
+
+    (int action_type, cell body, int mode) = actions.at(0).untriple();
+    throw_unless(501, action_type == 0);
+
+    validate_collection_success_reveal_message(body, nft_address, op_nft_reveal_success_collection_response, query_id, 0);
+
+    cell reveal_dict = null();
+
+    reveal_dict~udict_add?(64, 0, generate_content("new_nft_json1.json"));
+    reveal_dict~udict_add?(64, 1, generate_content("new_nft_json2.json"));
+    reveal_dict~udict_add?(64, 2, generate_content("new_nft_json3.json"));
+
+    builder msg_body = begin_cell()
+            .store_uint(op_collection_add_reveal_batch, 32)
+            .store_uint(random_query_id(), 64)
+            .store_ref(reveal_dict);
+
+    cell msg = generate_internal_message_custom(0, 0, 0, msg_body, owner_address, null(), 0);
+    (_, _) = invoke_method(recv_internal, [one_ton, 0, msg, msg_body.end_cell().begin_parse()]);
+
+
+    return gas_success_internal1;
+}

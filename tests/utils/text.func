@@ -1,0 +1,20 @@
+() ~strdump_int(slice text, int value) impure inline {
+    slice dump_str = begin_cell().store_slice(text)
+                    .store_uint(value + 48, 8).end_cell()
+                    .begin_parse();
+    ~strdump(dump_str);
+}
+
+() ~strdump_slice(slice text, slice value) impure inline {
+    slice dump_str = begin_cell()
+                    .store_slice(text)
+                    .store_slice(value)
+                    .end_cell()
+                    .begin_parse();
+    ~strdump(dump_str);
+}
+
+() ~strdump_dump(slice text, var value) impure inline {
+    ~strdump(text);
+    ~dump(value);
+}

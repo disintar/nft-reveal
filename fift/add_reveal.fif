@@ -1,0 +1,24 @@
+"TonUtil.fif" include
+
+
+variable items   dictnew items !
+variable items#  0 items# !
+
+{
+  <b 0 1 u, swap s, b> <s items# @ dup 250 >= abort"more than 250 nfts"
+  items @ 64 udict!+ not abort"cannot add nft to dictionary"
+  items ! items# 1+!
+} : add-item
+
+<b "reveal1.json" $, b> <s add-item
+<b "reveal2.json" $, b> <s add-item
+<b "reveal3.json" $, b> <s add-item
+<b "reveal4.json" $, b> <s add-item
+<b "reveal5.json" $, b> <s add-item
+<b "reveal6.json" $, b> <s add-item
+
+<b
+  1607220509 32 u,
+  0 64 u,
+  items @ ref,
+b>

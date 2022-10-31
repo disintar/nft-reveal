@@ -1,0 +1,4 @@
+"Color.fif" include
+
+64 { ^reset ."Item in random reveal: " ^green dup sbits 8 / $@ type cr -1 } dictmap
+^reset 

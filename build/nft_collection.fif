@@ -1,0 +1,710 @@
+"Asm.fif" include
+// automatically generated from `/home/tvorogme/.config/toncli/func-libs/stdlib.func` `/home/tvorogme/.config/toncli/func-libs/error_codes.func` `/home/tvorogme/.config/toncli/func-libs/math.func` `/home/tvorogme/projects/reveal_nft_collection/func/utils/helpers.func` `/home/tvorogme/projects/reveal_nft_collection/func/utils/params.func` `/home/tvorogme/projects/reveal_nft_collection/func/utils/op-codes.func` `/home/tvorogme/projects/reveal_nft_collection/func/nft-collection.func` 
+PROGRAM{
+  DECLPROC power
+  DECLPROC sqrt
+  DECLPROC avg
+  DECLPROC exp
+  DECLPROC log2
+  DECLPROC force_chain
+  DECLPROC try_parse_reveal_data
+  DECLPROC compact_reveal_data
+  DECLPROC load_data
+  DECLPROC save_data
+  DECLPROC calculate_nft_item_state_init
+  DECLPROC calculate_nft_item_address
+  DECLPROC deploy_nft_item
+  DECLPROC send_royalty_params
+  DECLPROC execute_reveal
+  DECLPROC recv_internal
+  102491 DECLMETHOD get_collection_data
+  92067 DECLMETHOD get_nft_address_by_index
+  85719 DECLMETHOD royalty_params
+  68445 DECLMETHOD get_nft_content
+  93270 DECLMETHOD get_reveal_data
+  power PROCREF:<{
+    //  x exponent
+    OVER	//  x exponent x
+    0 EQINT	//  x exponent _3
+    IFJMP:<{	//  x exponent
+      2DROP	// 
+      0 PUSHINT	//  _4=0
+    }>	//  x exponent
+    DUP	//  x exponent exponent
+    0 EQINT	//  x exponent _6
+    IFJMP:<{	//  x exponent
+      2DROP	// 
+      1 PUSHINT	//  _7=1
+    }>	//  x exponent
+    OVER	//  x counter result
+    WHILE:<{
+      OVER	//  x counter result counter
+      1 GTINT	//  x counter result _11
+    }>DO<{	//  x counter result
+      s2 PUSH	//  x counter result x
+      MUL	//  x counter result
+      SWAP	//  x result counter
+      DEC	//  x result counter
+      SWAP	//  x counter result
+    }>	//  x counter result
+    2 1 BLKDROP2	//  result
+  }>
+  sqrt PROCREF:<{
+    //  x
+    DUP	//  x x
+    0 EQINT	//  x _2
+    IFJMP:<{	//  x
+      DROP	// 
+      0 PUSHINT	//  _3=0
+    }>	//  x
+    DUP	//  x x
+    4 LESSINT	//  x _5
+    IFJMP:<{	//  x
+      DROP	// 
+      1 PUSHINT	//  _6=1
+    }>	//  x
+    DUP	//  x x
+    INC	//  x _9
+    1 RSHIFT#	//  x z
+    OVER	//  x z y
+    WHILE:<{
+      2DUP	//  x z y z y
+      LESS	//  x z y _13
+    }>DO<{	//  x z y
+      DROP	//  x z
+      s0 s1 s0 PUSH3	//  x z y x z
+      DIV	//  x z y _14
+      ROT	//  x y _14 z
+      ADD	//  x y _15
+      1 RSHIFT#	//  x y z
+      SWAP	//  x z y
+    }>	//  x z y
+    2 1 BLKDROP2	//  y
+  }>
+  avg PROCREF:<{
+    //  x y
+    ADD	//  _2
+    1 RSHIFT#	//  _4
+  }>
+  exp PROCREF:<{
+    //  x
+    DUP	//  x x
+    -1 GTINT	//  x _2
+    IF:<{	//  x
+      POW2	//  _3
+    }>ELSE<{	//  x
+      1 PUSHINT	//  x _6=1
+      SWAP	//  _6=1 x
+      NEGATE	//  _6=1 _8
+      RSHIFT	//  _3
+    }>
+  }>
+  log2 PROCREF:<{
+    //  x
+    0 PUSHINT	//  x n=0
+    7 PUSHPOW2	//  x n=0 _3=128
+    exp INLINECALLDICT	//  x n=0 _4
+    s2 s(-1) PUXC	//  x n=0 x _4
+    GEQ	//  x n=0 _5
+    IF:<{	//  x n=0
+      DROP	//  x
+      128 RSHIFT#	//  x
+      7 PUSHPOW2	//  x n
+    }>	//  x n
+    64 PUSHINT	//  x n _10=64
+    exp INLINECALLDICT	//  x n _11
+    s2 s(-1) PUXC	//  x n x _11
+    GEQ	//  x n _12
+    IF:<{	//  x n
+      SWAP	//  n x
+      64 RSHIFT#	//  n x
+      SWAP	//  x n
+      64 ADDCONST	//  x n
+    }>	//  x n
+    32 PUSHINT	//  x n _17=32
+    exp INLINECALLDICT	//  x n _18
+    s2 s(-1) PUXC	//  x n x _18
+    GEQ	//  x n _19
+    IF:<{	//  x n
+      SWAP	//  n x
+      32 RSHIFT#	//  n x
+      SWAP	//  x n
+      32 ADDCONST	//  x n
+    }>	//  x n
+    16 PUSHINT	//  x n _24=16
+    exp INLINECALLDICT	//  x n _25
+    s2 s(-1) PUXC	//  x n x _25
+    GEQ	//  x n _26
+    IF:<{	//  x n
+      SWAP	//  n x
+      16 RSHIFT#	//  n x
+      SWAP	//  x n
+      16 ADDCONST	//  x n
+    }>	//  x n
+    8 PUSHINT	//  x n _31=8
+    exp INLINECALLDICT	//  x n _32
+    s2 s(-1) PUXC	//  x n x _32
+    GEQ	//  x n _33
+    IF:<{	//  x n
+      SWAP	//  n x
+      8 RSHIFT#	//  n x
+      SWAP	//  x n
+      8 ADDCONST	//  x n
+    }>	//  x n
+    4 PUSHINT	//  x n _38=4
+    exp INLINECALLDICT	//  x n _39
+    s2 s(-1) PUXC	//  x n x _39
+    GEQ	//  x n _40
+    IF:<{	//  x n
+      SWAP	//  n x
+      4 RSHIFT#	//  n x
+      SWAP	//  x n
+      4 ADDCONST	//  x n
+    }>	//  x n
+    2 PUSHINT	//  x n _45=2
+    exp INLINECALLDICT	//  x n _46
+    s2 s(-1) PUXC	//  x n x _46
+    GEQ	//  x n _47
+    IF:<{	//  x n
+      SWAP	//  n x
+      2 RSHIFT#	//  n x
+      SWAP	//  x n
+      2 ADDCONST	//  x n
+    }>	//  x n
+    1 PUSHINT	//  x n _52=1
+    exp INLINECALLDICT	//  x n _53
+    s1 s2 XCHG	//  n x _53
+    GEQ	//  n _54
+    IF:<{	//  n
+      INC	//  n
+    }>	//  n
+  }>
+  force_chain PROC:<{
+    //  addr
+    REWRITESTDADDR	//  _8 _9
+    DROP	//  wc
+    0 EQINT	//  _6
+    333 THROWIFNOT
+  }>
+  try_parse_reveal_data PROCINLINE:<{
+    CONT:<{
+      SAMEALTSAVE	//  data
+      PUSHNULL	//  data reveal_content
+      0 PUSHINT	//  data reveal_content reveal_items_count=0
+      s2 PUSH	//  data reveal_content reveal_items_count=0 data
+      ISNULL	//  data reveal_content reveal_items_count=0 _5
+      NOT	//  data reveal_content reveal_items_count=0 _6
+      IF:<{	//  data reveal_content reveal_items_count=0
+        s0 s2 XCHG	//  reveal_items_count=0 reveal_content data
+        CTOS	//  reveal_items_count=0 reveal_content data_slice
+        DUP	//  reveal_items_count=0 reveal_content data_slice data_slice
+        SBITS	//  reveal_items_count=0 reveal_content data_slice _9
+        0 GTINT	//  reveal_items_count=0 reveal_content data_slice _11
+        IFJMP:<{	//  reveal_items_count=0 reveal_content data_slice
+          1 2 BLKDROP2	//  reveal_content data_slice
+          64 LDU	//  reveal_content reveal_items_count data_slice
+          OVER	//  reveal_content reveal_items_count data_slice reveal_items_count
+          0 NEQINT	//  reveal_content reveal_items_count data_slice _16
+          IF:<{	//  reveal_content reveal_items_count data_slice
+            1 2 BLKDROP2	//  reveal_items_count data_slice
+            LDREF	//  reveal_items_count _22 _21
+            DROP	//  reveal_items_count reveal_content
+            SWAP	//  reveal_content reveal_items_count
+          }>ELSE<{
+            DROP	//  reveal_content reveal_items_count
+          }>
+          SWAP
+          RETALT	//  reveal_items_count reveal_content
+        }>	//  reveal_items_count=0 reveal_content data_slice
+        DROP	//  reveal_items_count=0 reveal_content
+      }>ELSE<{
+        s2 POP	//  reveal_items_count=0 reveal_content
+      }>
+    }>
+    EXECUTE
+  }>
+  compact_reveal_data PROCINLINE:<{
+    //  reveal_items_count reveal_content_dict
+    SWAP
+    NEWC	//  reveal_content_dict reveal_items_count _3
+    64 STU	//  reveal_content_dict db
+    OVER	//  reveal_content_dict db reveal_content_dict
+    ISNULL	//  reveal_content_dict db _6
+    IFNOT:<{	//  reveal_content_dict db
+      STREF	//  db
+    }>ELSE<{
+      NIP	//  db
+    }>
+    ENDC	//  _8
+  }>
+  load_data PROCINLINE:<{
+    // 
+    c4 PUSH	//  _1
+    CTOS	//  ds
+    LDMSGADDR	//  owner_address ds
+    64 LDU	//  owner_address next_item_index ds
+    LDREF	//  owner_address next_item_index content ds
+    LDREF	//  owner_address next_item_index content nft_item_code ds
+    LDREF	//  owner_address next_item_index content nft_item_code royalty_params ds
+    PUSHNULL	//  owner_address next_item_index content nft_item_code royalty_params ds reveal_data
+    OVER	//  owner_address next_item_index content nft_item_code royalty_params ds reveal_data ds
+    SREFS	//  owner_address next_item_index content nft_item_code royalty_params ds reveal_data _21
+    0 GTINT	//  owner_address next_item_index content nft_item_code royalty_params ds reveal_data _23
+    IF:<{	//  owner_address next_item_index content nft_item_code royalty_params ds reveal_data
+      DROP	//  owner_address next_item_index content nft_item_code royalty_params ds
+      LDREF	//  owner_address next_item_index content nft_item_code royalty_params _37 _36
+      DROP	//  owner_address next_item_index content nft_item_code royalty_params reveal_data
+    }>ELSE<{
+      NIP	//  owner_address next_item_index content nft_item_code royalty_params reveal_data
+    }>
+  }>
+  save_data PROCINLINE:<{
+    //  owner_address next_item_index content nft_item_code royalty_params reveal_data
+    NEWC	//  owner_address next_item_index content nft_item_code royalty_params reveal_data _7
+    s0 s6 XCHG2	//  reveal_data next_item_index content nft_item_code royalty_params _7 owner_address
+    STSLICER	//  reveal_data next_item_index content nft_item_code royalty_params _8
+    s1 s4 XCHG	//  reveal_data royalty_params content nft_item_code next_item_index _8
+    64 STU	//  reveal_data royalty_params content nft_item_code _10
+    s1 s2 XCHG	//  reveal_data royalty_params nft_item_code content _10
+    STREF	//  reveal_data royalty_params nft_item_code _11
+    STREF	//  reveal_data royalty_params _12
+    STREF	//  reveal_data data_cell
+    OVER	//  reveal_data data_cell reveal_data
+    ISNULL	//  reveal_data data_cell _14
+    -1 NEQINT	//  reveal_data data_cell _16
+    IF:<{	//  reveal_data data_cell
+      STREF	//  data_cell
+    }>ELSE<{
+      NIP	//  data_cell
+    }>
+    ENDC	//  _18
+    c4 POP
+  }>
+  calculate_nft_item_state_init PROC:<{
+    //  item_index nft_item_code
+    SWAP
+    NEWC	//  nft_item_code item_index _3
+    64 STU	//  nft_item_code _5
+    MYADDR	//  nft_item_code _5 _6
+    STSLICER	//  nft_item_code _7
+    ENDC	//  nft_item_code data
+    0 PUSHINT	//  nft_item_code data _9=0
+    DUP	//  nft_item_code data _9=0 _10=0
+    NEWC	//  nft_item_code data _9=0 _10=0 _11
+    2 STU	//  nft_item_code data _9=0 _13
+    s1 s3 XCHG	//  _9=0 data nft_item_code _13
+    STDICT	//  _9=0 data _14
+    STDICT	//  _9=0 _15
+    1 STU	//  _17
+    ENDC	//  _18
+  }>
+  calculate_nft_item_address PROC:<{
+    //  wc state_init
+    HASHCU	//  wc _2
+    4 PUSHINT	//  wc _2 _3=4
+    NEWC	//  wc _2 _3=4 _4
+    3 STU	//  wc _2 _6
+    s1 s2 XCHG	//  _2 wc _6
+    8 STI	//  _2 _8
+    256 STU	//  _10
+    ENDC	//  _11
+    CTOS	//  _12
+  }>
+  deploy_nft_item PROC:<{
+    //  item_index nft_item_code amount nft_content
+    2SWAP	//  amount nft_content item_index nft_item_code
+    calculate_nft_item_state_init CALLDICT	//  amount nft_content state_init
+    0 PUSHINT	//  amount nft_content state_init _7=0
+    OVER	//  amount nft_content state_init _7=0 state_init
+    calculate_nft_item_address CALLDICT	//  amount nft_content state_init nft_address
+    7 PUSHINT	//  amount nft_content state_init nft_address _14
+    24 PUSHINT	//  amount nft_content state_init nft_address _14 _15=24
+    NEWC	//  amount nft_content state_init nft_address _14 _15=24 _16
+    6 STU	//  amount nft_content state_init nft_address _14 _18
+    ROT	//  amount nft_content state_init _14 _18 nft_address
+    STSLICER	//  amount nft_content state_init _14 _19
+    s0 s4 XCHG2	//  _14 nft_content state_init _19 amount
+    STVARUINT16	//  _14 nft_content state_init _20
+    s1 s3 XCHG	//  state_init nft_content _14 _20
+    108 STU	//  state_init nft_content _36
+    s1 s2 XCHG	//  nft_content state_init _36
+    STREF	//  nft_content _37
+    STREF	//  msg
+    ENDC	//  _39
+    1 PUSHINT	//  _39 _40=1
+    SENDRAWMSG
+  }>
+  send_royalty_params PROCINLINE:<{
+    //  to_address query_id data
+    2831876269 PUSHINT	//  to_address query_id data _4=2831876269
+    0 PUSHINT	//  to_address query_id data _4=2831876269 _5=0
+    16 PUSHINT	//  to_address query_id data _4=2831876269 _5=0 _6=16
+    NEWC	//  to_address query_id data _4=2831876269 _5=0 _6=16 _7
+    6 STU	//  to_address query_id data _4=2831876269 _5=0 _9
+    s0 s5 XCHG2	//  _5=0 query_id data _4=2831876269 _9 to_address
+    STSLICER	//  _5=0 query_id data _4=2831876269 _10
+    s4 PUSH	//  _5=0 query_id data _4=2831876269 _10 _11=0
+    STVARUINT16	//  _5=0 query_id data _4=2831876269 _12
+    s1 s4 XCHG	//  _4=2831876269 query_id data _5=0 _12
+    107 STU	//  _4=2831876269 query_id data _26
+    s1 s3 XCHG	//  data query_id _4=2831876269 _26
+    32 STU	//  data query_id _28
+    64 STU	//  data _30
+    SWAP	//  _30 data
+    STSLICER	//  msg
+    ENDC	//  _32
+    64 PUSHINT	//  _32 _33=64
+    SENDRAWMSG
+  }>
+  execute_reveal PROCINLINE:<{
+    //  sender_address msg_body nft_item_code reveal_data query_id
+    s0 s3 XCHG	//  sender_address query_id nft_item_code reveal_data msg_body
+    256 LDU	//  sender_address query_id nft_item_code reveal_data _100 _99
+    DROP	//  sender_address query_id nft_item_code reveal_data item_index
+    ROT	//  sender_address query_id reveal_data item_index nft_item_code
+    calculate_nft_item_state_init CALLDICT	//  sender_address query_id reveal_data state_init
+    0 PUSHINT	//  sender_address query_id reveal_data state_init _12=0
+    SWAP	//  sender_address query_id reveal_data _12=0 state_init
+    calculate_nft_item_address CALLDICT	//  sender_address query_id reveal_data nft_address
+    1607220508 PUSHINT	//  sender_address query_id reveal_data nft_address _15=1607220508
+    0 PUSHINT	//  sender_address query_id reveal_data nft_address _15=1607220508 _16=0
+    16 PUSHINT	//  sender_address query_id reveal_data nft_address _15=1607220508 _16=0 _17=16
+    NEWC	//  sender_address query_id reveal_data nft_address _15=1607220508 _16=0 _17=16 _18
+    6 STU	//  sender_address query_id reveal_data nft_address _15=1607220508 _16=0 _20
+    s3 PUSH	//  sender_address query_id reveal_data nft_address _15=1607220508 _16=0 _20 nft_address
+    STSLICER	//  sender_address query_id reveal_data nft_address _15=1607220508 _16=0 _21
+    OVER	//  sender_address query_id reveal_data nft_address _15=1607220508 _16=0 _21 _22=0
+    STVARUINT16	//  sender_address query_id reveal_data nft_address _15=1607220508 _16=0 _23
+    107 STU	//  sender_address query_id reveal_data nft_address _15=1607220508 _37
+    32 STU	//  sender_address query_id reveal_data nft_address _39
+    s1 s3 XCHG	//  sender_address nft_address reveal_data query_id _39
+    64 STU	//  sender_address nft_address reveal_data msg
+    s2 s3 XCHG2	//  msg reveal_data nft_address sender_address
+    SDEQ	//  msg reveal_data _43
+    501 THROWIFNOT
+    try_parse_reveal_data INLINECALLDICT	//  msg total_count reveal_data_dict
+    OVER	//  msg total_count reveal_data_dict total_count
+    0 EQINT	//  msg total_count reveal_data_dict _49
+    IF:<{	//  msg total_count reveal_data_dict
+      0 PUSHINT	//  msg total_count reveal_data_dict _50=0
+      s0 s3 XCHG2	//  reveal_data_dict total_count _50=0 msg
+      1 STU	//  reveal_data_dict total_count msg
+      DUP	//  reveal_data_dict total_count msg msg
+      ENDC	//  reveal_data_dict total_count msg _53
+      64 PUSHINT	//  reveal_data_dict total_count msg _53 _54=64
+      SENDRAWMSG
+      0 THROW
+      s0 s2 XCHG	//  msg total_count reveal_data_dict
+    }>	//  msg total_count reveal_data_dict
+    LTIME
+    ADDRAND
+    OVER	//  msg total_count reveal_data_dict total_count
+    RAND	//  msg total_count reveal_data_dict index
+    s0 s1 PUSH2
+    64 PUSHINT	//  msg total_count reveal_data_dict index index reveal_data_dict _63=64
+    DICTUGET
+    NULLSWAPIFNOT	//  msg total_count reveal_data_dict index _103 _104
+    DROP	//  msg total_count reveal_data_dict index value
+    s3 PUSH	//  msg total_count reveal_data_dict index value total_count
+    DEC	//  msg total_count reveal_data_dict index value _66
+    s2 s(-1) PUXC	//  msg total_count reveal_data_dict index value index _66
+    NEQ	//  msg total_count reveal_data_dict index value _67
+    IF:<{	//  msg total_count reveal_data_dict index value
+      s3 PUSH	//  msg total_count reveal_data_dict index value total_count
+      DEC	//  msg total_count reveal_data_dict index value _71
+      s3 PUSH
+      64 PUSHINT	//  msg total_count reveal_data_dict index value _71 reveal_data_dict _72=64
+      DICTUGET
+      NULLSWAPIFNOT	//  msg total_count reveal_data_dict index value _105 _106
+      DROP	//  msg total_count reveal_data_dict index value tailValue
+      s0 s0 s3 XCHG3
+      64 PUSHINT	//  msg total_count value tailValue index reveal_data_dict _75=64
+      DICTUSET	//  msg total_count value reveal_data_dict
+      SWAP	//  msg total_count reveal_data_dict value
+    }>ELSE<{
+      NIP	//  msg total_count reveal_data_dict value
+    }>
+    s2 PUSH	//  msg total_count reveal_data_dict value total_count
+    DEC	//  msg total_count reveal_data_dict value _79
+    ROT
+    64 PUSHINT	//  msg total_count value _79 reveal_data_dict _80=64
+    DICTUDEL	//  msg total_count value _107 _108
+    DROP	//  msg total_count value reveal_data_dict
+    0 PUSHINT	//  msg total_count value reveal_data_dict _82=0
+    1 PUSHINT	//  msg total_count value reveal_data_dict _82=0 _83=1
+    s0 s5 PUXC	//  _83=1 total_count value reveal_data_dict _82=0 _84=1 msg
+    1 STU	//  _83=1 total_count value reveal_data_dict _82=0 _86
+    s1 s5 XCHG	//  _82=0 total_count value reveal_data_dict _83=1 _86
+    1 STU	//  _82=0 total_count value reveal_data_dict _88
+    s1 s4 XCHG	//  reveal_data_dict total_count value _82=0 _88
+    1 STU	//  reveal_data_dict total_count value _90
+    SWAP	//  reveal_data_dict total_count _90 value
+    STSLICER	//  reveal_data_dict total_count msg
+    ENDC	//  reveal_data_dict total_count _92
+    64 PUSHINT	//  reveal_data_dict total_count _92 _93=64
+    SENDRAWMSG
+    DEC	//  reveal_data_dict _97
+    SWAP	//  _97 reveal_data_dict
+    compact_reveal_data INLINECALLDICT	//  new_reveal_data
+  }>
+  recv_internal PROC:<{
+    //  in_msg_full in_msg_body
+    DUP	//  in_msg_full in_msg_body in_msg_body
+    SEMPTY	//  in_msg_full in_msg_body _2
+    IFJMP:<{	//  in_msg_full in_msg_body
+      2DROP	// 
+    }>	//  in_msg_full in_msg_body
+    SWAP	//  in_msg_body in_msg_full
+    CTOS	//  in_msg_body cs
+    4 LDU	//  in_msg_body flags cs
+    SWAP
+    1 PUSHINT	//  in_msg_body cs flags _9=1
+    AND	//  in_msg_body cs _10
+    IFJMP:<{	//  in_msg_body cs
+      2DROP	// 
+    }>	//  in_msg_body cs
+    LDMSGADDR	//  in_msg_body _141 _140
+    DROP	//  in_msg_body sender_address
+    SWAP	//  sender_address in_msg_body
+    32 LDU	//  sender_address op in_msg_body
+    64 LDU	//  sender_address op query_id in_msg_body
+    load_data INLINECALLDICT	//  sender_address op query_id in_msg_body owner_address next_item_index content nft_item_code royalty_params reveal_data
+    s8 PUSH
+    1765620048 PUSHINT	//  sender_address op query_id in_msg_body owner_address next_item_index content nft_item_code royalty_params reveal_data op _29=1765620048
+    EQUAL	//  sender_address op query_id in_msg_body owner_address next_item_index content nft_item_code royalty_params reveal_data _30
+    IFJMP:<{	//  sender_address op query_id in_msg_body owner_address next_item_index content nft_item_code royalty_params reveal_data
+      s1 s6 XCHG
+      6 BLKDROP
+      1 2 BLKDROP2	//  sender_address query_id royalty_params
+      CTOS	//  sender_address query_id _31
+      send_royalty_params INLINECALLDICT
+    }>	//  sender_address op query_id in_msg_body owner_address next_item_index content nft_item_code royalty_params reveal_data
+    s8 PUSH
+    1607220507 PUSHINT	//  sender_address op query_id in_msg_body owner_address next_item_index content nft_item_code royalty_params reveal_data op _33=1607220507
+    EQUAL	//  sender_address op query_id in_msg_body owner_address next_item_index content nft_item_code royalty_params reveal_data _34
+    IFJMP:<{	//  sender_address op query_id in_msg_body owner_address next_item_index content nft_item_code royalty_params reveal_data
+      s8 POP	//  sender_address reveal_data query_id in_msg_body owner_address next_item_index content nft_item_code royalty_params
+      OVER
+      s4 s9 XCHG
+      s3 s6 XCHG
+      s8 s7 XCHG2	//  next_item_index royalty_params nft_item_code content owner_address sender_address in_msg_body nft_item_code reveal_data query_id
+      execute_reveal INLINECALLDICT	//  next_item_index royalty_params nft_item_code content owner_address updated_reveal_data
+      s1 s5 XCHG
+      4 1 REVERSE	//  owner_address next_item_index content nft_item_code royalty_params updated_reveal_data
+      save_data INLINECALLDICT
+    }>	//  sender_address op query_id in_msg_body owner_address next_item_index content nft_item_code royalty_params reveal_data
+    s7 POP	//  sender_address op reveal_data in_msg_body owner_address next_item_index content nft_item_code royalty_params
+    s8 s4 XCPU	//  royalty_params op reveal_data in_msg_body owner_address next_item_index content nft_item_code sender_address owner_address
+    SDEQ	//  royalty_params op reveal_data in_msg_body owner_address next_item_index content nft_item_code _39
+    401 THROWIFNOT
+    s6 PUSH	//  royalty_params op reveal_data in_msg_body owner_address next_item_index content nft_item_code op
+    1 EQINT	//  royalty_params op reveal_data in_msg_body owner_address next_item_index content nft_item_code _42
+    IFJMP:<{	//  royalty_params op reveal_data in_msg_body owner_address next_item_index content nft_item_code
+      s6 POP	//  royalty_params nft_item_code reveal_data in_msg_body owner_address next_item_index content
+      s0 s3 XCHG	//  royalty_params nft_item_code reveal_data content owner_address next_item_index in_msg_body
+      64 LDU	//  royalty_params nft_item_code reveal_data content owner_address next_item_index item_index in_msg_body
+      s1 s2 PUSH2	//  royalty_params nft_item_code reveal_data content owner_address next_item_index item_index in_msg_body item_index next_item_index
+      LEQ	//  royalty_params nft_item_code reveal_data content owner_address next_item_index item_index in_msg_body _48
+      402 THROWIFNOT
+      s1 s2 PUSH2	//  royalty_params nft_item_code reveal_data content owner_address next_item_index item_index in_msg_body item_index next_item_index
+      EQUAL	//  royalty_params nft_item_code reveal_data content owner_address next_item_index item_index in_msg_body is_last
+      SWAP	//  royalty_params nft_item_code reveal_data content owner_address next_item_index item_index is_last in_msg_body
+      LDVARUINT16	//  royalty_params nft_item_code reveal_data content owner_address next_item_index item_index is_last _52 in_msg_body
+      LDREF	//  royalty_params nft_item_code reveal_data content owner_address next_item_index item_index is_last _52 _157 _156
+      DROP	//  royalty_params nft_item_code reveal_data content owner_address next_item_index item_index is_last _52 _54
+      s8 PUSH
+      s3 s4 XCHG
+      -ROT	//  royalty_params nft_item_code reveal_data content owner_address next_item_index is_last item_index nft_item_code _52 _54
+      deploy_nft_item CALLDICT
+      IF:<{	//  royalty_params nft_item_code reveal_data content owner_address next_item_index
+        INC	//  royalty_params nft_item_code reveal_data content owner_address next_item_index
+        s4 s1 s4 XCHG3
+        s5 s3 XCHG2	//  owner_address next_item_index content nft_item_code royalty_params reveal_data
+        save_data INLINECALLDICT
+      }>ELSE<{
+        6 BLKDROP	// 
+      }>
+    }>	//  royalty_params op reveal_data in_msg_body owner_address next_item_index content nft_item_code
+    s6 PUSH	//  royalty_params op reveal_data in_msg_body owner_address next_item_index content nft_item_code op
+    2 EQINT	//  royalty_params op reveal_data in_msg_body owner_address next_item_index content nft_item_code _61
+    IFJMP:<{	//  royalty_params op reveal_data in_msg_body owner_address next_item_index content nft_item_code
+      s6 POP	//  royalty_params nft_item_code reveal_data in_msg_body owner_address next_item_index content
+      0 PUSHINT	//  royalty_params nft_item_code reveal_data in_msg_body owner_address next_item_index content counter=0
+      s0 s4 XCHG	//  royalty_params nft_item_code reveal_data counter=0 owner_address next_item_index content in_msg_body
+      LDREF	//  royalty_params nft_item_code reveal_data counter=0 owner_address next_item_index content _159 _158
+      DROP	//  royalty_params nft_item_code reveal_data counter=0 owner_address next_item_index content deploy_list
+      UNTIL:<{
+        64 PUSHINT	//  royalty_params nft_item_code reveal_data counter owner_address next_item_index content deploy_list _71=64
+        DICTUREMMIN
+        NULLSWAPIFNOT2	//  royalty_params nft_item_code reveal_data counter owner_address next_item_index content deploy_list item item_index f?
+        DUP	//  royalty_params nft_item_code reveal_data counter owner_address next_item_index content deploy_list item item_index f? f?
+        IF:<{	//  royalty_params nft_item_code reveal_data counter owner_address next_item_index content deploy_list item item_index f?
+          s0 s7 XCHG	//  royalty_params nft_item_code reveal_data f? owner_address next_item_index content deploy_list item item_index counter
+          INC	//  royalty_params nft_item_code reveal_data f? owner_address next_item_index content deploy_list item item_index counter
+          DUP
+          250 PUSHINT	//  royalty_params nft_item_code reveal_data f? owner_address next_item_index content deploy_list item item_index counter counter _75=250
+          GEQ	//  royalty_params nft_item_code reveal_data f? owner_address next_item_index content deploy_list item item_index counter _76
+          IF:<{	//  royalty_params nft_item_code reveal_data f? owner_address next_item_index content deploy_list item item_index counter
+            399 THROW
+          }>	//  royalty_params nft_item_code reveal_data f? owner_address next_item_index content deploy_list item item_index counter
+          403 PUSHINT	//  royalty_params nft_item_code reveal_data f? owner_address next_item_index content deploy_list item item_index counter _79=403
+          OVER	//  royalty_params nft_item_code reveal_data f? owner_address next_item_index content deploy_list item item_index counter _79=403 counter
+          ADD	//  royalty_params nft_item_code reveal_data f? owner_address next_item_index content deploy_list item item_index counter _80
+          s2 s6 PUSH2	//  royalty_params nft_item_code reveal_data f? owner_address next_item_index content deploy_list item item_index counter _80 item_index next_item_index
+          LEQ	//  royalty_params nft_item_code reveal_data f? owner_address next_item_index content deploy_list item item_index counter _80 _81
+          THROWANYIFNOT
+          s0 s2 XCHG	//  royalty_params nft_item_code reveal_data f? owner_address next_item_index content deploy_list counter item_index item
+          LDVARUINT16	//  royalty_params nft_item_code reveal_data f? owner_address next_item_index content deploy_list counter item_index _83 item
+          LDREF	//  royalty_params nft_item_code reveal_data f? owner_address next_item_index content deploy_list counter item_index _83 _170 _169
+          DROP	//  royalty_params nft_item_code reveal_data f? owner_address next_item_index content deploy_list counter item_index _83 _85
+          s2 PUSH
+          s11 s2 s(-1) PUXC2	//  royalty_params nft_item_code reveal_data f? owner_address next_item_index content deploy_list counter item_index item_index nft_item_code _83 _85
+          deploy_nft_item CALLDICT
+          s4 PUSH	//  royalty_params nft_item_code reveal_data f? owner_address next_item_index content deploy_list counter item_index next_item_index
+          EQUAL	//  royalty_params nft_item_code reveal_data f? owner_address next_item_index content deploy_list counter _88
+          IF:<{	//  royalty_params nft_item_code reveal_data f? owner_address next_item_index content deploy_list counter
+            s0 s3 XCHG	//  royalty_params nft_item_code reveal_data f? owner_address counter content deploy_list next_item_index
+            INC	//  royalty_params nft_item_code reveal_data f? owner_address counter content deploy_list next_item_index
+            s0 s3 XCHG	//  royalty_params nft_item_code reveal_data f? owner_address next_item_index content deploy_list counter
+          }>	//  royalty_params nft_item_code reveal_data f? owner_address next_item_index content deploy_list counter
+          s0 s5 XCHG	//  royalty_params nft_item_code reveal_data counter owner_address next_item_index content deploy_list f?
+        }>ELSE<{
+          2 1 BLKDROP2	//  royalty_params nft_item_code reveal_data counter owner_address next_item_index content deploy_list f?
+        }>
+        NOT	//  royalty_params nft_item_code reveal_data counter owner_address next_item_index content deploy_list _91
+      }>	//  royalty_params nft_item_code reveal_data counter owner_address next_item_index content deploy_list
+      DROP
+      s3 POP	//  royalty_params nft_item_code reveal_data content owner_address next_item_index
+      s4 s1 s4 XCHG3
+      s5 s3 XCHG2	//  owner_address next_item_index content nft_item_code royalty_params reveal_data
+      save_data INLINECALLDICT
+    }>	//  royalty_params op reveal_data in_msg_body owner_address next_item_index content nft_item_code
+    s6 PUSH	//  royalty_params op reveal_data in_msg_body owner_address next_item_index content nft_item_code op
+    3 EQINT	//  royalty_params op reveal_data in_msg_body owner_address next_item_index content nft_item_code _94
+    IFJMP:<{	//  royalty_params op reveal_data in_msg_body owner_address next_item_index content nft_item_code
+      s3 POP
+      s5 POP	//  royalty_params content reveal_data in_msg_body nft_item_code next_item_index
+      s0 s2 XCHG	//  royalty_params content reveal_data next_item_index nft_item_code in_msg_body
+      LDMSGADDR	//  royalty_params content reveal_data next_item_index nft_item_code _172 _171
+      DROP	//  royalty_params content reveal_data next_item_index nft_item_code new_owner
+      s1 s5 s5 XCHG3
+      s0 s4 XCHG
+      s0 s3 XCHG	//  new_owner next_item_index content nft_item_code royalty_params reveal_data
+      save_data INLINECALLDICT
+    }>	//  royalty_params op reveal_data in_msg_body owner_address next_item_index content nft_item_code
+    s0 s6 XCHG
+    1607220509 PUSHINT	//  royalty_params nft_item_code reveal_data in_msg_body owner_address next_item_index content op _99=1607220509
+    EQUAL	//  royalty_params nft_item_code reveal_data in_msg_body owner_address next_item_index content _100
+    IFJMP:<{	//  royalty_params nft_item_code reveal_data in_msg_body owner_address next_item_index content
+      s0 s3 XCHG	//  royalty_params nft_item_code reveal_data content owner_address next_item_index in_msg_body
+      LDREF	//  royalty_params nft_item_code reveal_data content owner_address next_item_index _174 _173
+      DROP	//  royalty_params nft_item_code reveal_data content owner_address next_item_index reveal_batch
+      s0 s4 XCHG	//  royalty_params nft_item_code reveal_batch content owner_address next_item_index reveal_data
+      try_parse_reveal_data INLINECALLDICT	//  royalty_params nft_item_code reveal_batch content owner_address next_item_index total_count reveal_data_dict
+      UNTIL:<{
+        s0 s5 XCHG
+        64 PUSHINT	//  royalty_params nft_item_code reveal_data_dict content owner_address next_item_index total_count reveal_batch _111=64
+        DICTUREMMIN
+        NULLSWAPIFNOT2	//  royalty_params nft_item_code reveal_data_dict content owner_address next_item_index total_count _180 _182 _181 _183
+        NIP	//  royalty_params nft_item_code reveal_data_dict content owner_address next_item_index total_count reveal_batch item f?
+        DUP	//  royalty_params nft_item_code reveal_data_dict content owner_address next_item_index total_count reveal_batch item f? f?
+        IF:<{	//  royalty_params nft_item_code reveal_data_dict content owner_address next_item_index total_count reveal_batch item f?
+          SWAP	//  royalty_params nft_item_code reveal_data_dict content owner_address next_item_index total_count reveal_batch f? item
+          1 LDU	//  royalty_params nft_item_code reveal_data_dict content owner_address next_item_index total_count reveal_batch f? either item
+          SWAP	//  royalty_params nft_item_code reveal_data_dict content owner_address next_item_index total_count reveal_batch f? item either
+          0 EQINT	//  royalty_params nft_item_code reveal_data_dict content owner_address next_item_index total_count reveal_batch f? item _118
+          IF:<{	//  royalty_params nft_item_code reveal_data_dict content owner_address next_item_index total_count reveal_batch f? item
+            s0 s3 s7 XCPUXC
+            64 PUSHINT	//  royalty_params nft_item_code f? content owner_address next_item_index total_count reveal_batch item total_count reveal_data_dict _120=64
+            DICTUADD	//  royalty_params nft_item_code f? content owner_address next_item_index total_count reveal_batch _186 _187
+            DROP	//  royalty_params nft_item_code f? content owner_address next_item_index total_count reveal_batch reveal_data_dict
+          }>ELSE<{	//  royalty_params nft_item_code reveal_data_dict content owner_address next_item_index total_count reveal_batch f? item
+            LDREF	//  royalty_params nft_item_code reveal_data_dict content owner_address next_item_index total_count reveal_batch f? _189 _188
+            DROP	//  royalty_params nft_item_code reveal_data_dict content owner_address next_item_index total_count reveal_batch f? _123
+            CTOS	//  royalty_params nft_item_code reveal_data_dict content owner_address next_item_index total_count reveal_batch f? _125
+            s0 s3 s7 XCPUXC
+            64 PUSHINT	//  royalty_params nft_item_code f? content owner_address next_item_index total_count reveal_batch _125 total_count reveal_data_dict _126=64
+            DICTUADD	//  royalty_params nft_item_code f? content owner_address next_item_index total_count reveal_batch _190 _191
+            DROP	//  royalty_params nft_item_code f? content owner_address next_item_index total_count reveal_batch reveal_data_dict
+          }>
+          s0 s2 XCHG	//  royalty_params nft_item_code f? content owner_address next_item_index reveal_data_dict reveal_batch total_count
+          INC	//  royalty_params nft_item_code f? content owner_address next_item_index reveal_data_dict reveal_batch total_count
+          s0 s1 s6 XCHG3	//  royalty_params nft_item_code reveal_data_dict content owner_address next_item_index total_count reveal_batch f?
+        }>ELSE<{
+          NIP	//  royalty_params nft_item_code reveal_data_dict content owner_address next_item_index total_count reveal_batch f?
+        }>
+        NOT	//  royalty_params nft_item_code reveal_data_dict content owner_address next_item_index total_count reveal_batch _130
+        s1 s6 XCHG	//  royalty_params nft_item_code reveal_batch content owner_address next_item_index total_count reveal_data_dict _130
+      }>	//  royalty_params nft_item_code reveal_batch content owner_address next_item_index total_count reveal_data_dict
+      s5 POP	//  royalty_params nft_item_code reveal_data_dict content owner_address next_item_index total_count
+      s0 s4 XCHG2	//  royalty_params nft_item_code next_item_index content owner_address total_count reveal_data_dict
+      compact_reveal_data INLINECALLDICT	//  royalty_params nft_item_code next_item_index content owner_address new_reveal_data
+      s1 s5 XCHG
+      s3 s4 XCHG
+      s2 s3 XCHG	//  owner_address next_item_index content nft_item_code royalty_params new_reveal_data
+      save_data INLINECALLDICT
+      x{416c6c20646f6e65} PUSHSLICE	//  _134
+      STRDUMP	//  _135
+      DROP	// 
+    }>	//  royalty_params nft_item_code reveal_data in_msg_body owner_address next_item_index content
+    7 BLKDROP	// 
+    16 PUSHPOW2DEC	//  _136=65535
+    THROWANY
+  }>
+  get_collection_data PROC:<{
+    // 
+    load_data INLINECALLDICT	//  _11 _12 _13 _14 _15 _16
+    3 BLKDROP	//  owner_address next_item_index content
+    CTOS	//  owner_address next_item_index cs
+    LDREF	//  owner_address next_item_index _18 _17
+    DROP	//  owner_address next_item_index _9
+    ROT	//  next_item_index _9 owner_address
+  }>
+  get_nft_address_by_index PROC:<{
+    //  index
+    load_data INLINECALLDICT	//  index _12 _13 _14 _15 _16 _17
+    s2 s5 XCHG
+    5 BLKDROP	//  index nft_item_code
+    calculate_nft_item_state_init CALLDICT	//  state_init
+    0 PUSHINT	//  state_init _10=0
+    SWAP	//  _10=0 state_init
+    calculate_nft_item_address CALLDICT	//  _11
+  }>
+  royalty_params PROC:<{
+    // 
+    load_data INLINECALLDICT	//  _17 _18 _19 _20 _21 _22
+    s1 s5 XCHG
+    5 BLKDROP	//  royalty
+    CTOS	//  rs
+    16 LDU	//  _9 rs
+    16 LDU	//  _9 _12 rs
+    LDMSGADDR	//  _9 _12 _28 _27
+    DROP	//  _9 _12 _15
+  }>
+  get_nft_content PROC:<{
+    //  index individual_nft_content
+    NIP	//  individual_nft_content
+    load_data INLINECALLDICT	//  individual_nft_content _24 _25 _26 _27 _28 _29
+    s3 s5 XCHG
+    5 BLKDROP	//  individual_nft_content content
+    CTOS	//  individual_nft_content cs
+    LDREF	//  individual_nft_content _31 _30
+    NIP	//  individual_nft_content cs
+    LDREF	//  individual_nft_content _33 _32
+    DROP	//  individual_nft_content _14
+    CTOS	//  individual_nft_content common_content
+    1 PUSHINT	//  individual_nft_content common_content _17=1
+    NEWC	//  individual_nft_content common_content _17=1 _18
+    8 STU	//  individual_nft_content common_content _20
+    SWAP	//  individual_nft_content _20 common_content
+    STSLICER	//  individual_nft_content _21
+    STREF	//  _22
+    ENDC	//  _23
+  }>
+  get_reveal_data PROC:<{
+    // 
+    load_data INLINECALLDICT	//  _10 _11 _12 _13 _14 _15
+    5 1 BLKDROP2	//  reveal_data
+    try_parse_reveal_data INLINECALLDICT	//  total_count reveal_data_dict
+  }>
+}END>c

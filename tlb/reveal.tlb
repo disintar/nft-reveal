@@ -1,0 +1,30 @@
+bool_false$0 = Bool;
+bool_true$1 = Bool;
+bit$_ (## 1) = Bit;
+
+nothing$0 {X:Type} = Maybe X;
+just$1 {X:Type} value:X = Maybe X;
+left$0 {X:Type} {Y:Type} value:X = Either X Y;
+right$1 {X:Type} {Y:Type} value:Y = Either X Y;
+
+hm_edge#_ {n:#} {X:Type} {l:#} {m:#} label:(HmLabel ~l n)
+          {n = (~m) + l} node:(HashmapNode m X) = Hashmap n X;
+
+hmn_leaf#_ {X:Type} value:X = HashmapNode 0 X;
+hmn_fork#_ {n:#} {X:Type} left:^(Hashmap n X)
+           right:^(Hashmap n X) = HashmapNode (n + 1) X;
+
+hml_short$0 {m:#} {n:#} len:(Unary ~n) {n <= m} s:(n * Bit) = HmLabel ~n m;
+hml_long$10 {m:#} n:(#<= m) s:(n * Bit) = HmLabel ~n m;
+hml_same$11 {m:#} v:Bit n:(#<= m) = HmLabel ~n m;
+
+unary_zero$0 = Unary ~0;
+unary_succ$1 {n:#} x:(Unary ~n) = Unary ~(n + 1);
+
+
+nft_reveal_user_request#5fcc3d1a query_id:uint64 = InternalMsgBody;
+nft_reveal_nft_request#5fcc3d1b query_id:uint64 index:uint256 = InternalMsgBody;
+nft_reveal_success_collection_response#5fcc3d1c query_id:uint64 success:Bool new_content:(Maybe (Either Cell ^Cell))  = InternalMsgBody;
+
+collection_add_reveal_batch#5fcc3d1d query_id:uint64 new_content_batch:Hashmap 64 Either Cell ^Cell = InternalMsgBody;
+// collection_add_reveal_batch_reflection#5fcc3d1e query_id:uint64 is_content_added:Hashmap 64 ^Cell = InternalMsgBody;
